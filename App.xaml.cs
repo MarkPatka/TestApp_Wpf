@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using System.Configuration;
 using System.Data;
 using System.Windows;
@@ -8,12 +9,15 @@ using TestApp_Wpf.Services;
 using TestApp_Wpf.ViewModels;
 
 namespace TestApp_Wpf;
+
 public partial class App : Application 
 {
-    private readonly IHost _host;
-    
-    public App() => _host ??= Program
-        .CreateHostBuilder(Environment.GetCommandLineArgs())
+    private static readonly IHost _host;
+
+    static App() => _host = Host
+        .CreateDefaultBuilder(
+            Environment.GetCommandLineArgs())
+        .ConfigureServices(RegisterDependencies)
         .Build();
 
     public static Window? FocusedWindow =>
@@ -27,11 +31,11 @@ public partial class App : Application
     public static Window? GetTitledWindow(string title) =>
         Current.Windows.Cast<Window>()
         .FirstOrDefault(w => w.Title.Equals(title));
-
+    
     public IServiceProvider Services => _host.Services 
-        ?? throw new ApplicationException("Application is not initialized");
+        ?? throw new ApplicationException("Application services are not initialized");
 
-    internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services) => 
+    internal static void RegisterDependencies(HostBuilderContext host, IServiceCollection services) => 
         services
         .AddServices()
         .AddViewModels()
@@ -39,7 +43,6 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
         try
         {
             await _host.StartAsync().ConfigureAwait(false);
@@ -48,11 +51,13 @@ public partial class App : Application
         {
             MessageBox.Show($"An error occurred during startup: {ex.Message}");
         }
+        base.OnStartup(e);
     }
 
     protected override async void OnExit(ExitEventArgs e)
     {
-        base.OnExit(e);
         using (_host) await _host.StopAsync().ConfigureAwait(false);
+        base.OnExit(e);
+
     }
 }
