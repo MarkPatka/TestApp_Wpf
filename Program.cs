@@ -6,9 +6,13 @@ namespace TestApp_Wpf;
 internal static class Program
 {
     private const int TimeoutSeconds = 3;
-    private static readonly Mutex _mutex = new(false, typeof(Program).FullName);
+    
+    private static readonly Mutex _mutex;
+    
+    private static bool _initialized;
 
-    private static bool _initialized = false;
+    static Program() =>
+        _mutex = new(false, typeof(Program).FullName);
 
     [STAThread]
     public static void Main(string[] args)
@@ -17,7 +21,8 @@ internal static class Program
             .ParseArguments<CommandLineOptions>(args)
             .Cast<Parsed<CommandLineOptions>>();
 
-        /// You can add any logic with parsed cmd arguments. I`m just used to do this way.
+        /// You can add any logic with parsed cmd arguments. 
+        /// I`m just used to do this way.
         
         try
         {
@@ -61,7 +66,6 @@ internal static class Program
             _initialized = true;
             return app;
         }
-
     }
 
     private static int RunApplication(Application current)
@@ -70,7 +74,6 @@ internal static class Program
         {
             return current.Run();
         }
-
         return InitializApplication().Run();
     }
 }

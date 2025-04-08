@@ -1,4 +1,4 @@
-﻿using TestApp_Wpf.Models.SubModels;
+﻿using TestApp_Wpf.Models.DomainModels.AggregateObjects;
 
 namespace TestApp_Wpf.Models.DomainModels;
 

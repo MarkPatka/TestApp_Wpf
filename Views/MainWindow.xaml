@@ -18,9 +18,16 @@
         </Grid.ColumnDefinitions>
 
         <!-- 1. Таблица для отображения и редактирования данных -->
-        <DataGrid x:Name="DataGridFiles" Grid.Row="0" Grid.Column="0" Margin="10"
-                  AutoGenerateColumns="True" CanUserAddRows="True" CanUserDeleteRows="True"
-                  SelectionMode="Single" SelectionUnit="FullRow" IsReadOnly="False">
+        <DataGrid 
+            x:Name="DataGridFiles" 
+            Grid.Row="0" 
+            Grid.Column="0" 
+            Margin="10"
+            CanUserAddRows="False" 
+            CanUserDeleteRows="False" 
+            SelectionMode="Single" 
+            SelectionUnit="FullRow" 
+            IsReadOnly="False">
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Edit" />
@@ -30,14 +37,27 @@
         </DataGrid>
 
         <!-- 2. Область отображения информации о выбранной строке -->
-        <StackPanel Grid.Row="1" Grid.Column="0" Margin="10" Orientation="Vertical" Background="#FFEEEEEE">
-            <TextBlock Text="Selected Row Information:" FontWeight="Bold" Margin="0,0,0,5" />
+        <StackPanel 
+            Grid.Row="1"                     
+            Grid.Column="0" 
+            Margin="10" 
+            Orientation="Vertical" 
+            Background="#FFEEEEEE">
+            <TextBlock 
+                Text="Selected Row Information:" 
+                FontWeight="Bold" 
+                Margin="0,0,0,5">
+            </TextBlock>
             <ItemsControl x:Name="SelectedRowInfo">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Key}" FontWeight="SemiBold" Width="100" />
-                            <TextBlock Text="{Binding Value}" />
+                            <TextBlock 
+                                Text="{Binding Key}" 
+                                FontWeight="SemiBold" 
+                                Width="100">                                
+                            </TextBlock>
+                            <TextBlock Text="{Binding Value}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -45,17 +65,47 @@
         </StackPanel>
 
         <!-- 3. Графическое отображение информации -->
-        <Canvas x:Name="GraphicsCanvas" Grid.Row="2" Grid.Column="0" Margin="10" Background="#FFF0F0F0">
+        <Canvas 
+            x:Name="GraphicsCanvas"
+            Grid.Row="2" 
+            Grid.Column="0" 
+            Margin="10" 
+            Background="#FFF0F0F0">
+            
             <!-- Пример прямоугольника -->
-            <Rectangle Width="20" Height="12" Stroke="Black" StrokeThickness="1" Canvas.Left="50" Canvas.Top="50" />
-            <!-- Дополнительные объекты можно добавить динамически через код -->
+            <Rectangle 
+                Width="20" 
+                Height="12" 
+                Stroke="Black" 
+                StrokeThickness="1" 
+                Canvas.Left="50" 
+                Canvas.Top="50">
+            </Rectangle>
         </Canvas>
 
-        <!-- Правая панель для дополнительных элементов (если нужно) -->
-        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Margin="10" Background="#FFFAFAFA">
-            <TextBlock Text="Additional Controls" FontWeight="Bold" Margin="0,0,0,10" />
-            <Button Content="Load Data" Width="150" Height="30" Margin="0,0,0,10" />
-            <Button Content="Save Changes" Width="150" Height="30" Margin="0,0,0,10" />
+        <StackPanel 
+            Grid.Row="0" 
+            Grid.Column="1" 
+            Grid.RowSpan="3" 
+            Margin="10" 
+            Background="#FFFAFAFA">
+            <TextBlock 
+                Text="Additional Controls" 
+                FontWeight="Bold" 
+                Margin="0,0,0,10">
+            </TextBlock>
+            <Button 
+                Content="Load Data" 
+                Width="150" 
+                Height="30" 
+                Margin="0,0,0,10" >
+            </Button>
+            <Button 
+                Content="Save Changes" 
+                Width="150" 
+                Height="30" 
+                Margin="0,0,0,10">
+            </Button>
         </StackPanel>
     </Grid>
 </Window>
