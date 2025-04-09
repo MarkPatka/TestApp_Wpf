@@ -36,7 +36,7 @@ internal static class Program
             }
 
             SubscribeToDomainUnhandledExceptions();            
-            var app = InitializApplication();
+            var app = InitializeApplication();
             RunApplication(app);
         }
         finally
@@ -57,7 +57,7 @@ internal static class Program
                 MessageBoxImage.Error);
         };
 
-    private static Application InitializApplication()
+    private static Application InitializeApplication()
     {
         if (_initialized) return App.Current;
         else
@@ -74,6 +74,6 @@ internal static class Program
         {
             return current.Run();
         }
-        return InitializApplication().Run();
+        return InitializeApplication().Run();
     }
 }

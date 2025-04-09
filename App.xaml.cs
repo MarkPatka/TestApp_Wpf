@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Internal;
-using System.Configuration;
+using System;
 using System.Data;
 using System.Windows;
 using TestApp_Wpf.Services;
 using TestApp_Wpf.ViewModels;
+using TestApp_Wpf.Views;
 
 namespace TestApp_Wpf;
 
@@ -14,11 +13,15 @@ public partial class App : Application
 {
     private static readonly IHost _host;
 
-    static App() => _host = Host
-        .CreateDefaultBuilder(
-            Environment.GetCommandLineArgs())
-        .ConfigureServices(RegisterDependencies)
-        .Build();
+    static App()
+    {
+        _host = Host
+            .CreateDefaultBuilder(
+                Environment.GetCommandLineArgs())
+            .ConfigureServices(RegisterDependencies)
+            .Build();       
+    }
+
 
     public static Window? FocusedWindow =>
         Current.Windows.Cast<Window>()
@@ -32,13 +35,14 @@ public partial class App : Application
         Current.Windows.Cast<Window>()
         .FirstOrDefault(w => w.Title.Equals(title));
     
-    public IServiceProvider Services => _host.Services 
+    public static IServiceProvider Services => _host.Services 
         ?? throw new ApplicationException("Application services are not initialized");
 
     internal static void RegisterDependencies(HostBuilderContext host, IServiceCollection services) => 
         services
         .AddServices()
         .AddViewModels()
+        .RegisterViews()        
         ;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -46,10 +50,23 @@ public partial class App : Application
         try
         {
             await _host.StartAsync().ConfigureAwait(false);
+
+            var mainWindow = _host.Services.GetService<MainWindow>();
+            if (mainWindow != null) 
+            {
+                mainWindow.DataContext = ViewModelLocator.MainViewModel;
+                mainWindow.Show();
+            }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            MessageBox.Show($"An error occurred during startup: {ex.Message}");
+            MessageBox.Show(
+                $"Programm error occured", 
+                "Not found",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error, 
+                MessageBoxResult.None, 
+                MessageBoxOptions.DefaultDesktopOnly);
         }
         base.OnStartup(e);
     }
@@ -58,6 +75,5 @@ public partial class App : Application
     {
         using (_host) await _host.StopAsync().ConfigureAwait(false);
         base.OnExit(e);
-
     }
 }

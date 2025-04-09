@@ -15,13 +15,14 @@
     <Folder Include="Infrastructure\Behaviors\" />
     <Folder Include="Infrastructure\Converters\" />
     <Folder Include="Infrastructure\Extensions\" />
-    <Folder Include="Infrastructure\Helpers\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="EPPlus" Version="8.0.1" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
   </ItemGroup>
 
 </Project>
