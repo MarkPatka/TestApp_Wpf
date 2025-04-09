@@ -8,34 +8,49 @@ namespace TestApp_Wpf.Infrastructure.Commands;
 public abstract class BaseCommand 
     : ICommand, INotifyPropertyChanged
 {
-    private bool _isExecuting;
-    private CommandStatus _statusMessage = CommandStatus.DEFAULT;
+    private bool _isEnabled = true;
+    private CommandStatus _status = CommandStatus.DEFAULT;
     private Exception? _lastError;
-
-    public bool IsExecuting
+    private readonly SemaphoreSlim _executionLock = new(1, 1);
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public event EventHandler<Exception>? CommandFailed;
+    public event EventHandler? CanExecuteChanged
     {
-        get => _isExecuting;
-        protected set
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+   
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
         {
-            if (_isExecuting != value)
+            if (_isEnabled != value)
             {
-                _isExecuting = value;
+                _isEnabled = value;
+                RaiseCanExecuteChanged();
                 OnPropertyChanged();
-                OnCanExecuteChanged();
             }
         }
     }
-
+    public bool IsExecuting => 
+        _status == CommandStatus.EXECUTING;
+    public bool HasError => 
+        LastError != null;
     public CommandStatus Status
     {
-        get => _statusMessage;
+        get => _status;
         protected set
         {
-            _statusMessage = value;
-            OnPropertyChanged();
+            if (_status != value)
+            {
+                _status = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsExecuting));
+            }
         }
     }
-
     public Exception? LastError
     {
         get => _lastError;
@@ -47,43 +62,64 @@ public abstract class BaseCommand
         }
     }
 
-    public bool HasError => LastError != null;
-
-    public event EventHandler? CanExecuteChanged;
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public virtual bool CanExecute(object? parameter)
+    public virtual bool CanExecute(object? parameter) =>
+        IsEnabled && !IsExecuting;
+    
+    //There is "void" here as it`s ICommand interface method
+    public void Execute(object? parameter)
     {
-        return !IsExecuting;
+        try
+        {
+            ExecuteAsync(parameter)
+                .GetAwaiter()
+                .GetResult();
+        }
+        catch (AggregateException ex)
+        {
+            string errorMsg = ex.Flatten()
+                .InnerException?.Message ?? ex.Message;
+
+            LastError = new Exception(errorMsg);
+            Status = CommandStatus.ERROR;
+            CommandFailed?.Invoke(this, ex);
+            OnError(ex);
+        }
     }
 
-    public async void Execute(object? parameter)
+    private async Task ExecuteAsync(object? parameter)
     {
         if (!CanExecute(parameter)) return;
 
         try
         {
-            IsExecuting = true;
+            await _executionLock.WaitAsync();
             LastError = null;
             Status = CommandStatus.EXECUTING;
 
-            await ExecuteAsync(parameter).ConfigureAwait(true);
+            var execution = OnExecuteAsync(parameter);
+            await execution;
 
-            Status = CommandStatus.SUCCESS;
-        }
-        catch (Exception ex)
-        {
-            LastError = ex;
-            Status = CommandStatus.ERROR;
-            OnError(ex);
+            if (execution.Status == TaskStatus.RanToCompletion)
+            {
+                Status = CommandStatus.SUCCESS;
+            }
+            else if (execution.Status == TaskStatus.Canceled) 
+            {
+                Status = CommandStatus.CANCELED;
+            }
+            else
+            {
+                Status = CommandStatus.ERROR;
+            }
         }
         finally
         {
-            IsExecuting = false;
+            _executionLock.Release();
+            RaiseCanExecuteChanged();
         }
     }
 
-    protected abstract Task ExecuteAsync(object? parameter);
+    protected abstract Task OnExecuteAsync(object? parameter);
 
     /// <summary>
     /// Provide custom exception handling for derived classes
@@ -91,13 +127,10 @@ public abstract class BaseCommand
     /// <param name="ex"></param>
     protected virtual void OnError(Exception ex) { }
 
-    protected virtual void OnCanExecuteChanged()
-    {
-        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-    }
+    private static void RaiseCanExecuteChanged() =>
+        CommandManager.InvalidateRequerySuggested();
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }
+
