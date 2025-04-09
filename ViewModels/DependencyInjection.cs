@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TestApp_Wpf.ViewModels.Abstract;
 using TestApp_Wpf.ViewModels.Implementations;
+using TestApp_Wpf.ViewModels.Interfaces;
 
 namespace TestApp_Wpf.ViewModels;
 

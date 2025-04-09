@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TestApp_Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="{Binding Title}" 
+        Height="450" 
+        Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -98,7 +100,9 @@
                 Content="Load Data" 
                 Width="150" 
                 Height="30" 
-                Margin="0,0,0,10" >
+                Margin="0,0,0,10"
+                Command="{Binding LoadTestObjectFilesCommand}">
+                
             </Button>
             <Button 
                 Content="Save Changes" 
