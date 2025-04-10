@@ -1,45 +1,34 @@
-﻿using Microsoft.Win32;
+﻿using FluentValidation;
+using Microsoft.Win32;
 using System.IO;
+using TestApp_Wpf.Infrastructure.Commands.Abstract;
+using TestApp_Wpf.Models.ParsedModels;
+using TestApp_Wpf.Services.FileDialog.Interfaces;
+using TestApp_Wpf.Services.Validation.Interfaces;
 
 namespace TestApp_Wpf.Infrastructure.Commands.MainViewModel.Commands;
 
 public class LoadFilesCommand : BaseCommand
 {
-    private IReadOnlyList<string> _files = [];
+    private readonly IValidationService _fileValidator;
+    private readonly IFileDialogService _dialogService;
 
-    protected override Task OnExecuteAsync(object? parameter)
-    {
-        OpenFileDialog openFileDialog = GetFileDialog();
-
-        List<string> files = [];
-        if (openFileDialog.ShowDialog() == true)
-        {
-            foreach (string filename in openFileDialog.FileNames)
-            {
-                files.Add(Path.GetFileName(filename));
-            }
-        }
-
-        _files = files;
-        return Task.CompletedTask;
+    public LoadFilesCommand(
+        IValidationService fileValidator,                           
+        IFileDialogService dialogService)
+    { 
+        _fileValidator = fileValidator;
+        _dialogService = dialogService;
     }
 
-    private static OpenFileDialog GetFileDialog()
+    protected override async Task OnExecuteAsync(object? parameter)
     {
-        return new()
-        {
-            Multiselect = true,
-            Filter =
-                "Excel Files (*.xlsx)|*.xlsx|" +
-                "CSV Files (*.csv)|*.csv|" +
-                "Text Files (*.txt)|*.txt|" +
-                "JSON Files (*.json)|*.json|" +
-                "All Files (*.*)|*.*",
+        // 1. Get all files (only pathes)
+        var files = _dialogService.GetFiles();
 
-            InitialDirectory = Environment.GetFolderPath(
-                Environment.SpecialFolder.MyDocuments)
-        };
+        // 2. Validate files
+        await _fileValidator.ValidateAsync(files);
+
+        await Task.CompletedTask;
     }
-
-    public IReadOnlyList<string> Files => _files;
 }

@@ -3,16 +3,15 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using TestApp_Wpf.Models.Common.Enumerations;
 
-namespace TestApp_Wpf.Infrastructure.Commands;
+namespace TestApp_Wpf.Infrastructure.Commands.Abstract;
 
 public abstract class BaseCommand 
     : ICommand, INotifyPropertyChanged
 {
-    private bool _isEnabled = true;
     private CommandStatus _status = CommandStatus.DEFAULT;
     private Exception? _lastError;
-    private readonly SemaphoreSlim _executionLock = new(1, 1);
-    
+    private readonly SemaphoreSlim _executionLock = new(1, 1);    
+
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler<Exception>? CommandFailed;
     public event EventHandler? CanExecuteChanged
@@ -21,19 +20,6 @@ public abstract class BaseCommand
         remove => CommandManager.RequerySuggested -= value;
     }
    
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set
-        {
-            if (_isEnabled != value)
-            {
-                _isEnabled = value;
-                RaiseCanExecuteChanged();
-                OnPropertyChanged();
-            }
-        }
-    }
     public bool IsExecuting => 
         _status == CommandStatus.EXECUTING;
     public bool HasError => 
@@ -62,15 +48,14 @@ public abstract class BaseCommand
         }
     }
 
-    public virtual bool CanExecute(object? parameter) =>
-        IsEnabled && !IsExecuting;
-    
-    //There is "void" here as it`s ICommand interface method
+    public virtual bool CanExecute(object? parameter) => 
+        !IsExecuting;
     public void Execute(object? parameter)
     {
         try
         {
             ExecuteAsync(parameter)
+                .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -85,32 +70,25 @@ public abstract class BaseCommand
             OnError(ex);
         }
     }
-
-    private async Task ExecuteAsync(object? parameter)
+    
+    protected async Task ExecuteAsync(object? parameter)
     {
         if (!CanExecute(parameter)) return;
-
         try
         {
             await _executionLock.WaitAsync();
             LastError = null;
             Status = CommandStatus.EXECUTING;
 
-            var execution = OnExecuteAsync(parameter);
+            Task execution = OnExecuteAsync(parameter);            
             await execution;
 
-            if (execution.Status == TaskStatus.RanToCompletion)
+            Status = execution.Status switch
             {
-                Status = CommandStatus.SUCCESS;
-            }
-            else if (execution.Status == TaskStatus.Canceled) 
-            {
-                Status = CommandStatus.CANCELED;
-            }
-            else
-            {
-                Status = CommandStatus.ERROR;
-            }
+                TaskStatus.RanToCompletion => CommandStatus.SUCCESS,
+                TaskStatus.Canceled => CommandStatus.CANCELED,
+                _ => CommandStatus.ERROR,
+            };
         }
         finally
         {
@@ -126,10 +104,8 @@ public abstract class BaseCommand
     /// </summary>
     /// <param name="ex"></param>
     protected virtual void OnError(Exception ex) { }
-
     private static void RaiseCanExecuteChanged() =>
         CommandManager.InvalidateRequerySuggested();
-
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
