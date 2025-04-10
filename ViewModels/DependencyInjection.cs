@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TestApp_Wpf.Infrastructure.Commands.Abstract;
+using TestApp_Wpf.Infrastructure.Factories;
 using TestApp_Wpf.ViewModels.Implementations;
 using TestApp_Wpf.ViewModels.Interfaces;
 
@@ -13,5 +15,6 @@ public static class DependencyInjection
 
         return services;
     }
+
 
 }
