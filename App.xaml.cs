@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Data;
 using System.Windows;
+using TestApp_Wpf.Infrastructure;
 using TestApp_Wpf.Services;
 using TestApp_Wpf.ViewModels;
 using TestApp_Wpf.Views;
@@ -40,9 +41,10 @@ public partial class App : Application
 
     internal static void RegisterDependencies(HostBuilderContext host, IServiceCollection services) => 
         services
+        .AddInfrastructure()
         .AddServices()
         .AddViewModels()
-        .RegisterViews()        
+        .AddViews()        
         ;
 
     protected override async void OnStartup(StartupEventArgs e)
