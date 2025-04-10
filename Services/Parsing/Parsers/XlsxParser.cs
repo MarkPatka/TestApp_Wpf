@@ -3,9 +3,9 @@ using TestApp_Wpf.Services.Parsing.Interfaces;
 
 namespace TestApp_Wpf.Services.Parsing.Parsers;
 
-public class XlsParser : IFileParser
+public class XlsxParser : IFileParser
 {
-    public bool CanParse<T>(IParsedFile parsedFile) 
+    public bool CanParse<T>(IParsingFile parsedFile) 
         where T : class
     {
         throw new NotImplementedException();

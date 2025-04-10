@@ -1,13 +1,14 @@
-﻿using System.IO;
+﻿using MimeKit;
+using System.IO;
 
 namespace TestApp_Wpf.Services.Parsing.Interfaces;
 
-public interface IParsedFile
+public interface IParsingFile
 {
     /// <summary>
     /// The file type (extension)
     /// </summary>
-    public string ContentType { get; }
+    public ContentType ContentType { get; }
     
     public string FileName { get; }
     
@@ -21,7 +22,7 @@ public interface IParsedFile
     /// </summary>
     public long Length { get; }          
     
-    public Stream OpenReadStream();            
-    public void CopyTo(Stream target);         
-    public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default);
+    //public Stream OpenReadStream();            
+    //public void CopyTo(Stream target);         
+    //public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default);
 }

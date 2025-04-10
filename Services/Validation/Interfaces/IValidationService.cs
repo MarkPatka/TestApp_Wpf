@@ -2,4 +2,5 @@
 
 public interface IValidationService
 {
+    public Task<T> ValidateAsync<T>(T obj);
 }

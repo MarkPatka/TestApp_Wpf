@@ -11,7 +11,7 @@ public class ParsingService : IParsingService
         _parsers = parsers;
 
 
-    public Task<T> ParseFileAsync<T>(IParsedFile file) 
+    public Task<T> ParseFileAsync<T>(IParsingFile file) 
         where T : class
     {
         throw new NotImplementedException();
