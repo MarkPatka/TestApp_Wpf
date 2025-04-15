@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using TestApp_Wpf.Models.DomainModels;
+using TestApp_Wpf.Models.ParsedModels;
 using TestApp_Wpf.Services.FileDialog;
 using TestApp_Wpf.Services.FileDialog.Interfaces;
 using TestApp_Wpf.Services.Parsing;
@@ -17,8 +19,8 @@ internal static class DependencyInjection
 {
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssembly(
-            Assembly.GetExecutingAssembly());
+
+        services.AddValidators();
 
         services
             .AddScoped<IFileParser, CsvParser>()
@@ -30,6 +32,14 @@ internal static class DependencyInjection
             .AddScoped<IFileUploaderService, FileUploaderService>()
             ;
 
+        return services;
+    }
+    public static IServiceCollection AddValidators(this IServiceCollection services)
+    {
+        services
+            .AddValidatorsFromAssemblyContaining<ParsedFileResult>()
+            .AddValidatorsFromAssemblyContaining<TestObject>();
+        
         return services;
     }
 }

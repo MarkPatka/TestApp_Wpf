@@ -33,7 +33,6 @@ public class FileDialogService : IFileDialogService
             files.AddRange(
                 openFileDialog.FileNames.Select(Path.GetFullPath));
         }
-       
         return files.AsReadOnly();
     }
 }

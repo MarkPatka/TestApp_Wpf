@@ -14,7 +14,6 @@
     <Folder Include="Controls\" />
     <Folder Include="Infrastructure\Behaviors\" />
     <Folder Include="Infrastructure\Converters\" />
-    <Folder Include="Infrastructure\Extensions\" />
   </ItemGroup>
 
   <ItemGroup>

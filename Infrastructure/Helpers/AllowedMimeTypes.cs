@@ -18,7 +18,7 @@ public static class AllowedMimeTypes
         }
         .ToFrozenDictionary();
 
-    public static bool Has(string extension, string mimeMessage)
+    public static bool Contains(string extension, string mimeMessage)
     {
         if (_frozenMimes.TryGetValue(extension, out string? value))
         {

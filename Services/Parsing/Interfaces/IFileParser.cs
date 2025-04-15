@@ -5,6 +5,6 @@ namespace TestApp_Wpf.Services.Parsing.Interfaces;
 
 public interface IFileParser
 {
-    public bool CanParse<T>(IParsingFile parsedFile) where T : class;
+    public bool CanParse<T>(IParsingFile file) where T : class;
     public Task<T> Parse<T>(Stream fileStream) where T : class;
 }

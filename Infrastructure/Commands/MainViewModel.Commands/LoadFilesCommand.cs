@@ -1,7 +1,10 @@
 ﻿using FluentValidation;
-using Microsoft.Win32;
+using FluentValidation.Results;
+using HeyRed.Mime;
 using System.IO;
+using System.Linq;
 using TestApp_Wpf.Infrastructure.Commands.Abstract;
+using TestApp_Wpf.Infrastructure.Extensions;
 using TestApp_Wpf.Models.ParsedModels;
 using TestApp_Wpf.Services.FileDialog.Interfaces;
 using TestApp_Wpf.Services.Validation.Interfaces;
@@ -24,10 +27,26 @@ public class LoadFilesCommand : BaseCommand
     protected override async Task OnExecuteAsync(object? parameter)
     {
         // 1. Get all files (only pathes)
-        var files = _dialogService.GetFiles();
+        var files = _dialogService.GetFiles()
+            .MapParsedFile<ParsedFileResult>()
+            ;
 
         // 2. Validate files
-        await _fileValidator.ValidateAsync(files);
+        List<ParsedFileResult> validParsedFiles = [];
+
+        var iterator = files.GetEnumerator();
+        while (iterator.MoveNext())
+        {
+            ValidationResult validationResult = await _fileValidator
+                .ValidateAsync<ParsedFileResult>(iterator.Current);
+
+            if (validationResult.IsValid) 
+            {
+                validParsedFiles.Add(iterator.Current);
+            }
+        }
+
+
 
         await Task.CompletedTask;
     }
