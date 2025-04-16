@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
-using HeyRed.Mime;
-using MimeKit;
 using System.IO;
+using System.IO.Compression;
 using TestApp_Wpf.Infrastructure.Helpers;
 using TestApp_Wpf.Models.ParsedModels;
-using ContentType = MimeKit.ContentType;
 
 namespace TestApp_Wpf.Services.Validation.Validators;
 
@@ -13,16 +11,16 @@ public class FileValidator : AbstractValidator<ParsedFileResult>
 {
     public FileValidator()
     {
-        RuleFor(x => x.Length).LessThan(1000);
+        RuleFor(x => x.Length).LessThan(100_000);
         RuleFor(x => x.FileName).NotEmpty();
-
+        RuleFor(x => x.Extension).NotEmpty();
         RuleFor(x => x.FullPath).NotEmpty()
-            .SetValidator(new MimeTypeValidator<ContentType>());
+            .SetValidator(new MimeTypeValidator<System.Net.Mime.ContentType>());
     }
 
 
 
-    class MimeTypeValidator<T> 
+    class MimeTypeValidator<T>
         : PropertyValidator<ParsedFileResult, string>
     {
         public override string Name => nameof(this.Name);
@@ -35,7 +33,16 @@ public class FileValidator : AbstractValidator<ParsedFileResult>
                 if (!File.Exists(fullpath)) return false;
 
                 string extension = Path.GetExtension(fullpath);
-                string mimeMessageByExtension = MimeTypesMap.GetMimeType(Path.GetFileName(fullpath));
+                
+                string mimeMessageByExtension = MimeTypes
+                    .GetMimeType(Path.GetFileName(fullpath));
+
+                if (SupportedMimeTypes.IsTextType(extension))
+                {
+                    return SupportedMimeTypes
+                        .Contains(extension, mimeMessageByExtension);
+                }
+
                 string mimeMessageByContent = DetectMimeTypeByContent(fullpath);
 
                 bool messagesAreEqual = string.Equals(
@@ -43,7 +50,7 @@ public class FileValidator : AbstractValidator<ParsedFileResult>
                     mimeMessageByContent,
                     StringComparison.OrdinalIgnoreCase);
 
-                bool mimeTypeIsAllowed = AllowedMimeTypes
+                bool mimeTypeIsAllowed = SupportedMimeTypes
                     .Contains(extension, mimeMessageByContent);
 
                 return messagesAreEqual && mimeTypeIsAllowed;
@@ -52,25 +59,49 @@ public class FileValidator : AbstractValidator<ParsedFileResult>
         }
 
 
-        static string DetectMimeTypeByContent(string _filePath)
+
+        static string DetectMimeTypeByContent(string filePath)
         {
             try
             {
                 byte[] buffer = new byte[256];
 
-                using FileStream stream = new(_filePath, FileMode.Open, FileAccess.Read);
-                var mimeParser = new MimeParser(stream, MimeFormat.Entity);
-                var message = mimeParser.ParseMessage();
+                using FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                if (bytesRead == 0)
+                    throw new InvalidOperationException("File is empty");
 
-                return message.Body.ContentType.MediaType + "/" +
-                       message.Body.ContentType.MediaSubtype;
+                return GetMimeTypeFromSignature(buffer, filePath);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new ValidationException(
-                    "Exception was thrown while MIME type validaton by file content");
+                throw new InvalidOperationException("Failed to detect MIME type", ex);
             }
         }
+        static string GetMimeTypeFromSignature(byte[] buffer, string filePath)
+        {
+            string hexString = Convert.ToHexString(buffer);
+
+            foreach (var mimeCode in SupportedMimeTypes.MimeCodes)
+            {
+                if (hexString.StartsWith(
+                    mimeCode.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return DetectZipBasedMimeType(filePath) ?? "application/octet-stream";
+                }
+            }
+            return "application/octet-stream";
+        }
+
+        static string? DetectZipBasedMimeType(string filePath)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(filePath);
+            if (archive.GetEntry("[Content_Types].xml") != null)
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return null;
+        }
+
     }
 }
     

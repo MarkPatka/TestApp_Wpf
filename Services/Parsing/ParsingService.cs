@@ -1,19 +1,28 @@
-﻿using TestApp_Wpf.Models.DomainModels;
+﻿using TestApp_Wpf.Infrastructure.Factories.Abstract;
+using TestApp_Wpf.Models.DomainModels;
 using TestApp_Wpf.Services.Parsing.Interfaces;
 
 namespace TestApp_Wpf.Services.Parsing;
 
 public class ParsingService : IParsingService
 {
-    private readonly IEnumerable<IFileParser> _parsers;
+    private readonly IParserFactory _parsers;
 
-    public ParsingService(IEnumerable<IFileParser> parsers) =>
+    public ParsingService(IParserFactory parsers) =>
         _parsers = parsers;
 
 
-    public Task<T> ParseFileAsync<T>(IParsingFile file) 
-        where T : class
+    public async Task ParseFileAsync(IParsingFile file) 
     {
-        throw new NotImplementedException();
+        try
+        {
+            var parser = _parsers.CreateParser(file.Extension);
+
+            await Task.CompletedTask;
+        }
+        catch (Exception ex) 
+        { 
+            throw new Exception(ex.Message, ex);
+        }
     }
 }

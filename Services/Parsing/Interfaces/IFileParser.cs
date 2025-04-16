@@ -1,10 +1,9 @@
 ﻿using System.IO;
-using TestApp_Wpf.Models.DomainModels;
 
 namespace TestApp_Wpf.Services.Parsing.Interfaces;
 
 public interface IFileParser
 {
-    public bool CanParse<T>(IParsingFile file) where T : class;
-    public Task<T> Parse<T>(Stream fileStream) where T : class;
+    public bool CanParse(IParsingFile file);
+    public Task Parse(Stream fileStream);
 }

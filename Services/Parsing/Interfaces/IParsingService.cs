@@ -4,5 +4,5 @@ namespace TestApp_Wpf.Services.Parsing.Interfaces;
 
 public interface IParsingService
 {
-    public Task<T> ParseFileAsync<T>(IParsingFile file) where T : class;
+    public Task ParseFileAsync(IParsingFile file);
 }

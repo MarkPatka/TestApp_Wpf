@@ -1,7 +1,4 @@
-﻿using MimeKit;
-using System.IO;
-
-namespace TestApp_Wpf.Services.Parsing.Interfaces;
+﻿namespace TestApp_Wpf.Services.Parsing.Interfaces;
 
 public interface IParsingFile
 { 
@@ -11,7 +8,12 @@ public interface IParsingFile
     /// Full path to file
     /// </summary>
     public string FullPath { get; }
-    
+
+    /// <summary>
+    /// File extension
+    /// </summary>
+    public string Extension { get; }
+
     /// <summary>
     /// File size in MB
     /// </summary>
