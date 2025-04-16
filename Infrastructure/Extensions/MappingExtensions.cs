@@ -13,11 +13,12 @@ public static class MappingExtensions
         {
             FileInfo fileInfo = new(filePath);
 
+            string extension = fileInfo.Extension;
             string name = fileInfo.Name;
             double fileSize = fileInfo.Length / 1024.0d;
 
             ParsedFileResult parsedFileResult = new(
-                name, filePath, fileSize);
+                name, filePath, extension, fileSize);
 
             yield return parsedFileResult;
         }   
