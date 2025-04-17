@@ -1,7 +1,10 @@
 ﻿using System.Collections.Frozen;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TestApp_Wpf.Infrastructure.Extensions;
 using TestApp_Wpf.Models.Common.Abstract;
+using TestApp_Wpf.Services.Parsing.Parsers;
 
 namespace TestApp_Wpf.Infrastructure.Helpers;
 
@@ -23,7 +26,7 @@ public class SupportedParsingTypes
         foreach (var domainModel in domainModels) 
         {
             var headers = domainModel
-                .GetProperties(BindingFlags.Public)
+                .GetProperties()
                 .Select(p => p.Name)
                 .ToArray();
 
@@ -32,6 +35,67 @@ public class SupportedParsingTypes
         _supportedTypes = supportedTypes.ToFrozenDictionary();
     }
 
-    
+    public static Func<FileStream, Task<Type?>> GetFileContentResolver(string fileExtension)
+    {
+        return fileExtension switch
+        {
+            ".csv"  => IdentifyCsvContentAsync,
+            ".json" => IdentifyJsonContentAsync,
+            ".xls"  => IdentifyXlsContentAsync,
+            ".xlsx" => IdentifyXlsContentAsync,
+            _ => throw new InvalidOperationException(
+                $"There is no registered file content type identifier for type \"{fileExtension}\".")
+        };
+    }
+
+
+    private static async Task<Type?> IdentifyCsvContentAsync(FileStream fileStream)
+    {
+        using var reader = new StreamReader(fileStream);
+        var headerLine = await reader.ReadLineAsync();
+
+        if (string.IsNullOrEmpty(headerLine))
+            throw new InvalidOperationException("The CSV file is empty");
+
+        var headers = headerLine
+            .Split(';')
+            .Select(h => h.Trim())
+            .ToArray();
+
+        var objectType = DetermineObjectTypeByFields(headers);
+
+        return objectType;
+    }
+    private static async Task<Type?> IdentifyJsonContentAsync(FileStream fileStream)
+    {
+        throw new NotImplementedException();
+    }
+    private static async Task<Type?> IdentifyXlsContentAsync(FileStream fileStream)
+    {
+        throw new NotImplementedException();
+    }
+    private static Type? DetermineObjectTypeByFields(string[] headers)
+    {
+        foreach (var type in _supportedTypes.Keys)
+        {
+            var properties = type
+                .GetProperties()
+                .Select(p => p.Name)
+                .ToArray();
+
+            if (headers.SequenceEqual(
+                properties, StringComparer.OrdinalIgnoreCase))
+            {
+                return type;
+            }
+
+            if (headers.IsSubsequence(
+                properties, StringComparer.OrdinalIgnoreCase))
+            {
+                return type;
+            }
+        }
+        return null;
+    }
 }
 

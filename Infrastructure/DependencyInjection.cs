@@ -19,7 +19,8 @@ public static class DependencyInjection
     private static IServiceCollection RegisterFactories(this IServiceCollection services)
     {
         services
-            .AddSingleton<ICommandFactory, CommandFactory>();
+            .AddScoped<ICommandFactory, CommandFactory>()
+            .AddScoped<IParserFactory, ParserFactory>();
 
         return services;
     }
