@@ -3,21 +3,25 @@ using TestApp_Wpf.Infrastructure.Commands.Abstract;
 using TestApp_Wpf.Infrastructure.Extensions;
 using TestApp_Wpf.Models.ParsedModels;
 using TestApp_Wpf.Services.FileDialog.Interfaces;
+using TestApp_Wpf.Services.Parsing.Interfaces;
 using TestApp_Wpf.Services.Validation.Interfaces;
 
 namespace TestApp_Wpf.Infrastructure.Commands.MainViewModel.Commands;
 
 public class LoadFilesCommand : BaseCommand
 {
-    private readonly IValidationService _fileValidator;
     private readonly IFileDialogService _dialogService;
+    private readonly IValidationService _fileValidator;
+    private readonly IParsingService    _fileParser;
 
     public LoadFilesCommand(
         IValidationService fileValidator,                           
-        IFileDialogService dialogService)
+        IFileDialogService dialogService,
+        IParsingService parsingService)
     { 
         _fileValidator = fileValidator;
         _dialogService = dialogService;
+        _fileParser = parsingService;
     }
 
     protected override async Task OnExecuteAsync(object? parameter)
@@ -43,6 +47,13 @@ public class LoadFilesCommand : BaseCommand
         }
 
         // Parse valid files
+        foreach (var file in validParsedFiles) 
+        {
+            await _fileParser.ParseFileAsync(file);
+
+        }
+
+
 
         await Task.CompletedTask;
     }
