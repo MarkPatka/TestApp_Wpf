@@ -1,4 +1,8 @@
-﻿using TestApp_Wpf.Infrastructure.Factories.Abstract;
+﻿using CommandLine;
+using System.IO;
+using TestApp_Wpf.Infrastructure.Factories.Abstract;
+using TestApp_Wpf.Infrastructure.Helpers;
+using TestApp_Wpf.Models.Common.Abstract;
 using TestApp_Wpf.Models.DomainModels;
 using TestApp_Wpf.Services.Parsing.Interfaces;
 
@@ -17,6 +21,20 @@ public class ParsingService : IParsingService
         try
         {
             var parser = _parsers.CreateParser(file.Extension);
+
+            using var fileStream = new FileStream(
+                file.FullPath, FileMode.Open, FileAccess.ReadWrite);
+            
+            var contentTypeResolver = SupportedParsingTypes
+                .GetFileContentResolver(file.Extension);
+
+            Type? contentType = await contentTypeResolver(fileStream);
+            
+
+            if (contentType is not null)
+            {
+                await parser.Parse(fileStream, contentType);
+            }
 
             await Task.CompletedTask;
         }

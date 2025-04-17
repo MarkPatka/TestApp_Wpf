@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using TestApp_Wpf.Models.Common.Abstract;
 using TestApp_Wpf.Models.DomainModels;
 using TestApp_Wpf.Services.Parsing.Interfaces;
 
@@ -11,7 +12,7 @@ public class JsonParser : IFileParser
         throw new NotImplementedException();
     }
 
-    public Task Parse(Stream fileStream)
+    public Task<List<T>> Parse<T>(FileStream fileStream, T contentType)
     {
         throw new NotImplementedException();
     }

@@ -44,9 +44,9 @@ public partial class App : Application
         services
         .AddModels()
         .AddViews()
-        .AddViewModels()
-        .AddInfrastructure()
         .AddServices()
+        .AddInfrastructure()
+        .AddViewModels()
         ;
 
     protected override async void OnStartup(StartupEventArgs e)
