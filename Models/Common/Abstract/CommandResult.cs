@@ -1,10 +1,24 @@
 ﻿using TestApp_Wpf.Models.Common.Enumerations;
+using TestApp_Wpf.Models.Common.Error;
 
 namespace TestApp_Wpf.Models.Common.Abstract;
 
-public class CommandResult<T>
+public record struct CommandResult<TValue>
 {
-    public T? Value { get; }
-    public CommandStatus Status { get; } = CommandStatus.DEFAULT;
-    public List<Exception> Errors { get; } = [];
+    public TValue? Value { get; set; } = default;
+    public CommandStatus Status { get; set; } = CommandStatus.DEFAULT;
+    public Exception? Error { get; set; } = default;
+
+    public CommandResult(TValue value) : this()
+    {
+        Value = value;
+        Status = CommandStatus.SUCCESS;
+    }
+    public CommandResult(Exception error) : this()
+    {
+        Error = error;
+        Status = CommandStatus.ERROR;
+    }
+
+
 }
