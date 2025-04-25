@@ -21,7 +21,29 @@ public static class MappingExtensions
                 name, filePath, extension, fileSize);
 
             yield return parsedFileResult;
-        }   
-      
+        }  
+    }
+    public static ParsedFileResult MapParsedFile<T>(
+        this string fullPath)
+        where T : ParsedFileResult
+    {
+        try
+        {
+            FileInfo fileInfo = new(fullPath);
+
+            string extension = fileInfo.Extension;
+            string name = fileInfo.Name;
+            double fileSize = fileInfo.Length / 1024.0d;
+
+            ParsedFileResult parsedFileResult = new(
+                name, fullPath, extension, fileSize);
+
+            return parsedFileResult;
+        }
+        catch (Exception ex) 
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+        
     }
 }

@@ -52,19 +52,24 @@ public class SupportedParsingTypes
     private static async Task<Type?> IdentifyCsvContentAsync(FileStream fileStream)
     {
         using var reader = new StreamReader(fileStream);
-        var headerLine = await reader.ReadLineAsync();
+        
+        while (!reader.EndOfStream) 
+        {
+            var headerLine = await reader.ReadLineAsync();
+            if (!string.IsNullOrEmpty(headerLine))
+            {
+                var headers = headerLine
+                    .Split(';')
+                    .Select(h => h.Trim())
+                    .ToArray();
 
-        if (string.IsNullOrEmpty(headerLine))
-            throw new InvalidOperationException("The CSV file is empty");
+                var objectType = DetermineObjectTypeByFields(headers);
 
-        var headers = headerLine
-            .Split(';')
-            .Select(h => h.Trim())
-            .ToArray();
-
-        var objectType = DetermineObjectTypeByFields(headers);
-
-        return objectType;
+                return objectType;
+            }
+        }
+        throw new InvalidOperationException(
+            $"The {Path.GetFileName(fileStream.Name)} is empty - nothing to read");
     }
     private static async Task<Type?> IdentifyJsonContentAsync(FileStream fileStream)
     {

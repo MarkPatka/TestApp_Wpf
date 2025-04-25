@@ -11,6 +11,7 @@ public static class DependencyInjection
     {
         services
             .RegisterCommands()
+            .RegisterScopedCommands()
             .RegisterFactories();
 
         return services;
@@ -19,7 +20,8 @@ public static class DependencyInjection
     private static IServiceCollection RegisterFactories(this IServiceCollection services)
     {
         services
-            .AddScoped<ICommandFactory, CommandFactory>()
+            .AddTransient<ICommandFactory, CommandFactory>()
+            .AddScoped<IScopedCommandFactory, ScopedCommandFactory>()
             .AddScoped<IParserFactory, ParserFactory>();
 
         return services;
@@ -27,10 +29,13 @@ public static class DependencyInjection
 
     private static IServiceCollection RegisterCommands(this IServiceCollection services)
     {
+        return services;
+    }
+    private static IServiceCollection RegisterScopedCommands(this IServiceCollection services)
+    {
         services
-            .AddTransient<LoadFilesCommand>();
+            .AddScoped<LoadTestObjectsCommand>();
 
         return services;
     }
-
 }

@@ -5,8 +5,11 @@ using TestApp_Wpf.Infrastructure.Factories.Abstract;
 
 namespace TestApp_Wpf.Infrastructure.Factories;
 
-public class CommandFactory(IServiceProvider serviceProvider) : ICommandFactory
+public class ScopedCommandFactory(IServiceProvider serviceProvider) : IScopedCommandFactory
 {
+    private readonly List<IDisposable> _disposables = [];
+    public event EventHandler? Disposing;
+
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     public T GetCommand<T>() where T : notnull, BaseCommand
@@ -19,36 +22,67 @@ public class CommandFactory(IServiceProvider serviceProvider) : ICommandFactory
         Func<object?, Task> execute, 
         Func<object?, bool>? canExecute = null, 
         Action<Exception>? errorHandler = null)
-        => new BaseCommand(
-            asyncExecute: execute,
-            canExecute: canExecute,
-            errorHandler: errorHandler);
-
+    {
+        var command = new BaseCommand(asyncExecute: execute, canExecute: canExecute, errorHandler: errorHandler);
+        TrackDisposable(command);
+        return command;
+    }
     public ICommand CreateAsyncCommand(
         Func<Task> execute, 
-        Func<bool>? canExecute = null, 
+        Func<bool>? canExecute = null,
         Action<Exception>? errorHandler = null)
-        => new BaseCommand(
+    {
+        var command = new BaseCommand(
             asyncExecute: _ => execute(),
             canExecute: _ => canExecute?.Invoke() ?? true,
             errorHandler: errorHandler);
 
+        TrackDisposable(command);
+        return command;
+    }
     public ICommand CreateParameterizedCommand(
-        Action<object?> execute, 
+        Action<object?> syncExecute, 
         Func<object?, bool>? canExecute = null, 
         Action<Exception>? errorHandler = null)
-        => new BaseCommand(
-            syncExecute: execute, 
-            canExecute: canExecute,
+    {
+        var command = new BaseCommand(
+            syncExecute: syncExecute, 
+            canExecute: canExecute, 
             errorHandler: errorHandler);
 
+        TrackDisposable(command);
+        return command;
+    }
     public ICommand CreateCommand(
-        Action execute,
+        Action execute, 
         Func<bool>? canExecute = null, 
         Action<Exception>? errorHandler = null)
-        => new BaseCommand(
+    {
+        var command = new BaseCommand(
             syncExecute: _ => execute(),
             canExecute: _ => canExecute?.Invoke() ?? true,
             errorHandler: errorHandler);
-}
 
+        TrackDisposable(command);
+        return command;
+    }
+
+
+    private void TrackDisposable(ICommand command)
+    {
+        if (command is IDisposable disposable)
+        {
+            _disposables.Add(disposable);
+        }
+    }
+    public void Dispose()
+    {
+        Disposing?.Invoke(this, EventArgs.Empty);
+
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
+        _disposables.Clear();
+    }
+}
