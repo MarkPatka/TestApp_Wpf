@@ -6,11 +6,11 @@ namespace TestApp_Wpf.Services.FileDialog;
 
 public class FileDialogService : IFileDialogService
 {
-    public OpenFileDialog GetFileDialog()
+    public OpenFileDialog GetFileDialog(bool allowMultiselect = true)
     {
         return new()
         {
-            Multiselect = true,
+            Multiselect = allowMultiselect,
             Filter =
                 "Excel Files (*.xlsx)|*.xlsx|" +
                 "CSV Files (*.csv)|*.csv|" +
@@ -34,5 +34,16 @@ public class FileDialogService : IFileDialogService
                 openFileDialog.FileNames.Select(Path.GetFullPath));
         }
         return files.AsReadOnly();
+    }
+    public string GetFile()
+    {
+        string file = string.Empty;
+        OpenFileDialog openFileDialog = GetFileDialog(false);
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            file = openFileDialog.FileName;
+        }
+        return file;
     }
 }

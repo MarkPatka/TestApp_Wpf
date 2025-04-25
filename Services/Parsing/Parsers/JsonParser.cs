@@ -11,8 +11,7 @@ public class JsonParser : IFileParser
     {
         throw new NotImplementedException();
     }
-
-    public Task<List<T>> Parse<T>(FileStream fileStream, T contentType)
+    public Task<List<T>> Parse<T>(string filepath, Type contentType, T instance) where T : IDomainModel
     {
         throw new NotImplementedException();
     }

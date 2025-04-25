@@ -11,7 +11,8 @@ public class XlsxParser : IFileParser
         throw new NotImplementedException();
     }
 
-    public Task<List<T>> Parse<T>(FileStream fileStream, T contentType)
+
+    public Task<List<T>> Parse<T>(string filepath, Type contentType, T instance) where T : IDomainModel
     {
         //using var package = new ExcelPackage(fileStream);
         //var sheet = package.Workbook.Worksheets[0];

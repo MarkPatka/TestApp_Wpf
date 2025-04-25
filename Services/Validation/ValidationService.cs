@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using TestApp_Wpf.Models.Common.Abstract;
 using TestApp_Wpf.Services.Validation.Interfaces;
 
 namespace TestApp_Wpf.Services.Validation;
@@ -20,6 +21,24 @@ public class ValidationService : IValidationService
 
         ValidationResult result = await validator.ValidateAsync(obj);
         return result;        
-    } 
+    }
+
+    public async Task<List<T>> ValidateDomainModels<T>(
+        IEnumerable<IDomainModel> models)
+    {
+        List<T> validParsedModels = [];
+        var iterator = models.GetEnumerator();
+        while (iterator.MoveNext())
+        {
+            if (iterator.Current is T model)
+            {
+                var modelValidation = await ValidateAsync(model);
+
+                if (modelValidation.IsValid)
+                    validParsedModels.Add(model);
+            }
+        }
+        return validParsedModels;
+    }
 
 }
