@@ -13,7 +13,6 @@
   <ItemGroup>
     <Folder Include="Controls\" />
     <Folder Include="Infrastructure\Behaviors\" />
-    <Folder Include="Infrastructure\Converters\" />
   </ItemGroup>
 
   <ItemGroup>

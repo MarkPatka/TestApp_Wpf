@@ -34,10 +34,12 @@ internal static class Program
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
-
-            SubscribeToDomainUnhandledExceptions();            
-            var app = InitializeApplication();
-            RunApplication(app);
+            else
+            {
+                SubscribeToDomainUnhandledExceptions();
+                var app = InitializeApplication();
+                RunApplication(app);
+            }
         }
         finally
         {

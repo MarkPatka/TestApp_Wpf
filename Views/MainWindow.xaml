@@ -25,17 +25,51 @@
             Grid.Row="0" 
             Grid.Column="0" 
             Margin="10"
+            AutoGenerateColumns="False"
             CanUserAddRows="False" 
             CanUserDeleteRows="False" 
             SelectionMode="Single" 
             SelectionUnit="FullRow" 
-            IsReadOnly="False">
+            IsReadOnly="False"
+            ItemsSource="{Binding TestObjects, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Edit" />
                     <MenuItem Header="Delete" />
                 </ContextMenu>
             </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="Name"
+                    Binding="{Binding Name}">                    
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="Distance"
+                    Binding="{Binding Distance}">
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="Angle"
+                    Binding="{Binding Angle}">
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="Width"
+                    Binding="{Binding Width}">
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="Height"
+                    Binding="{Binding Height}">
+                </DataGridTextColumn>
+                <DataGridTextColumn
+                    Width="*"
+                    Header="IsDefect"
+                    Binding="{Binding IsDefect}">
+                </DataGridTextColumn>
+            </DataGrid.Columns>
         </DataGrid>
 
         <!-- 2. Область отображения информации о выбранной строке -->
@@ -101,7 +135,7 @@
                 Width="150" 
                 Height="30" 
                 Margin="0,0,0,10"
-                Command="{Binding LoadFilesCommand}">
+                Command="{Binding LoadTestObjects}">
                 
             </Button>
             <Button 
